@@ -1,0 +1,9 @@
+﻿{
+	"id": "shrimb.scroungers",
+	"name": "Scroungers",
+	"version": "0.1.0",
+	"authors": "shrimb",
+	"description": "A peculiar type of scavenger, isolated for generations atop the peak of the world, evolved for their particular situation.",
+	"requirements": [ "fisobs", "moreslugcats" ],
+	"requirements_names": [ "Fisobs", "More Slugcats Expansion" ]
+}
