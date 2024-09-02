@@ -1,6 +1,7 @@
-Use this template on GitHub or [download the code](https://github.com/SlimeCubed/ExampleSlugBaseMod/archive/refs/heads/master.zip), whichever is easiest.
+This is the full code and mod for Scroungers.
 
-Links:
-- [Template Walkthrough](https://slimecubed.github.io/slugbase/articles/template.html) for a guide to this template.
-- [SlugBase Docs](https://slimecubed.github.io/slugbase/) for information regarding custom slugcats.
-- [Modding Wiki](https://rainworldmodding.miraheze.org/wiki/Downpour_Reference/Mod_Directories) for `modinfo.json` documentation.
+Scroungers are a scavenger variant which are smaller, more skittish, and have unique long tails. The mod is not complete yet; they still need to have spawns added.
+
+If you want to download this mod, please download it off of the Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3203099171
+
+If you want to add Scroungers to your region or mod, DO NOT copy the code here. Instead, put the Scroungers mod on the workshop as a dependency for your mod.
