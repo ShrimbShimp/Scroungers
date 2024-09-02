@@ -155,7 +155,7 @@ namespace scroungerproject
                 Logger.LogError("Scrounger icon not found!");
         }
 
-        //CWT
+        #region CWT
         public static ConditionalWeakTable<Scavenger, ScroungerInfo> ScroungerCWT = new();
         public class ScroungerInfo
         {
@@ -166,9 +166,82 @@ namespace scroungerproject
                 scrRef = new WeakReference<Scavenger>(sc);
             }
 
+            public void JumpLogicUpdate()
+            {
+                if (!scrRef.TryGetTarget(out Scavenger self))
+                    return;
+
+                if (self.dead)
+                {
+                    return;
+                }
+                if (!self.Consious && self.animation != null && (self.animation.id == MoreSlugcatsEnums.ScavengerAnimationID.PrepareToJump || self.animation.id == MoreSlugcatsEnums.ScavengerAnimationID.Jumping))
+                {
+                    self.animation = null;
+                }
+                for (int i = self.jumpFinders.Count - 1; i >= 0; i--)
+                {
+                    if (self.jumpFinders[i] != null)
+                    {
+                        if (self.jumpFinders[i].slatedForDeletion)
+                        {
+                            self.jumpFinders.RemoveAt(i);
+                        }
+                        else if (self.safariControlled)
+                        {
+                            self.jumpFinders[i].Destroy();
+                        }
+                        else
+                        {
+                            self.jumpFinders[i].Update();
+                        }
+                    }
+                }
+                if (self.safariControlled)
+                {
+                    if (self.controlledJumpFinder != null && self.controlledJumpFinder.startPos != self.abstractCreature.pos.Tile)
+                    {
+                        self.controlledJumpFinder.Destroy();
+                        self.controlledJumpFinder = null;
+                    }
+                    if (self.controlledJumpFinder == null)
+                    {
+                        self.controlledJumpFinder = new Scavenger.JumpFinder(self.room, self, self.abstractCreature.pos.Tile);
+                    }
+                    self.controlledJumpFinder.Update();
+                    self.controlledJumpFinder.fade = 0;
+                    if (self.inputWithDiagonals != null && self.inputWithDiagonals.Value.jmp && !self.lastInputWithDiagonals.Value.jmp && !self.inputWithDiagonals.Value.pckp && self.controlledJumpFinder.bestJump != null)
+                    {
+                        self.InitiateJump(self.controlledJumpFinder);
+                    }
+                }
+                else if (self.controlledJumpFinder != null)
+                {
+                    self.controlledJumpFinder.Destroy();
+                    self.controlledJumpFinder = null;
+                }
+                if (self.animation != null && self.animation.id == MoreSlugcatsEnums.ScavengerAnimationID.Jumping)
+                {
+                    self.JumpingUpdate();
+                }
+                else if (self.InStandardRunMode)
+                {
+                    self.RunningUpdate();
+                }
+                if (self.actOnJump != null && (self.animation == null || (self.animation.id != MoreSlugcatsEnums.ScavengerAnimationID.PrepareToJump && self.animation.id != MoreSlugcatsEnums.ScavengerAnimationID.Jumping)))
+                {
+                    self.actOnJump.fade++;
+                    if (self.actOnJump.fade > 40)
+                    {
+                        self.actOnJump = null;
+                    }
+                }
+            }
+
             public float tailThickness;
             public int tailPattern;
         }
+        #endregion
 
         #region Critob
         sealed class ScrCritob : Critob
@@ -345,8 +418,8 @@ namespace scroungerproject
         private void Scavenger_Update(On.Scavenger.orig_Update orig, Scavenger self, bool eu)
         {
             orig(self, eu);
-            if (self.abstractCreature != null && CustomCreatures.isScrounger(self.abstractCreature))
-                self.JumpLogicUpdate();
+            if (ScroungerCWT.TryGetValue(self, out ScroungerInfo scrounger))
+                scrounger.JumpLogicUpdate();
         }
 
         private void ScavengerGraphics_DrawSprites1(On.ScavengerGraphics.orig_DrawSprites orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPosV2)
@@ -852,6 +925,17 @@ namespace scroungerproject
                     }
                     if (self.scavenger.dead == false)
                     {
+                        for (int i = 3; i > 0; i--)
+                        {
+                            if (RWCustom.Custom.DistLess(self.tail[self.tail.Length - i].pos, self.tail[self.tail.Length - i - 1].pos, 15f))
+                            {
+                                Vector2 tailDirection = (self.tail[self.tail.Length - i].pos - self.owner.bodyChunks[0].pos).normalized;
+                                float directionMultiplier = Mathf.Sign(tailDirection.x) * Mathf.Sign(self.owner.bodyChunks[0].vel.x);
+
+                                self.tail[self.tail.Length - i].vel.x += directionMultiplier;
+                            }
+                        }
+
                         self.tail[self.tail.Length - 4].vel.y += 3f;
                         self.tail[self.tail.Length - 3].vel.y += 2f;
                         self.tail[self.tail.Length - 2].vel.y += 1f;
